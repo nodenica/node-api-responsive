@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Utilities</title>
+  <link rel="stylesheet" href="assets/css/bootstrap.min.css"/>
+  <link rel="stylesheet" href="assets/css/custom.css"/>
+  <link rel="stylesheet" href="assets/css/style.css"/>
+  <link rel="stylesheet" href="assets/css/sh_style.css"/>
+</head>
+<body>
+  <div class="container">
+<h1 id="util">util</h1>
+<pre><code>Stability: 4 - API Frozen
+</code></pre><p>These functions are in the module <code>&#39;util&#39;</code>. Use <code>require(&#39;util&#39;)</code> to access
+them.</p>
+<h2 id="util-format-format-">util.format(format, [...])</h2>
+<p>Returns a formatted string using the first argument as a <code>printf</code>-like format.</p>
+<p>The first argument is a string that contains zero or more <em>placeholders</em>.
+Each placeholder is replaced with the converted value from its corresponding
+argument. Supported placeholders are:</p>
+<ul>
+<li><code>%s</code> - String.</li>
+<li><code>%d</code> - Number (both integer and float).</li>
+<li><code>%j</code> - JSON.</li>
+<li><code>%%</code> - single percent sign (<code>&#39;%&#39;</code>). This does not consume an argument.</li>
+</ul>
+<p>If the placeholder does not have a corresponding argument, the placeholder is
+not replaced.</p>
+<pre><code>util.format(&#39;%s:%s&#39;, &#39;foo&#39;); // &#39;foo:%s&#39;
+</code></pre><p>If there are more arguments than placeholders, the extra arguments are
+converted to strings with <code>util.inspect()</code> and these strings are concatenated,
+delimited by a space.</p>
+<pre><code>util.format(&#39;%s:%s&#39;, &#39;foo&#39;, &#39;bar&#39;, &#39;baz&#39;); // &#39;foo:bar baz&#39;
+</code></pre><p>If the first argument is not a format string then <code>util.format()</code> returns
+a string that is the concatenation of all its arguments separated by spaces.
+Each argument is converted to a string with <code>util.inspect()</code>.</p>
+<pre><code>util.format(1, 2, 3); // &#39;1 2 3&#39;
+</code></pre><h2 id="util-debug-string-">util.debug(string)</h2>
+<p>A synchronous output function. Will block the process and
+output <code>string</code> immediately to <code>stderr</code>.</p>
+<pre><code>require(&#39;util&#39;).debug(&#39;message on stderr&#39;);
+</code></pre><h2 id="util-error-">util.error([...])</h2>
+<p>Same as <code>util.debug()</code> except this will output all arguments immediately to
+<code>stderr</code>.</p>
+<h2 id="util-puts-">util.puts([...])</h2>
+<p>A synchronous output function. Will block the process and output all arguments
+to <code>stdout</code> with newlines after each argument.</p>
+<h2 id="util-print-">util.print([...])</h2>
+<p>A synchronous output function. Will block the process, cast each argument to a
+string then output to <code>stdout</code>. Does not place newlines after each argument.</p>
+<h2 id="util-log-string-">util.log(string)</h2>
+<p>Output with timestamp on <code>stdout</code>.</p>
+<pre><code>require(&#39;util&#39;).log(&#39;Timestamped message.&#39;);
+</code></pre><h2 id="util-inspect-object-options-">util.inspect(object, [options])</h2>
+<p>Return a string representation of <code>object</code>, which is useful for debugging.</p>
+<p>An optional <em>options</em> object may be passed that alters certain aspects of the
+formatted string:</p>
+<ul>
+<li><p><code>showHidden</code> - if <code>true</code> then the object&#39;s non-enumerable properties will be
+shown too. Defaults to <code>false</code>.</p>
+</li>
+<li><p><code>depth</code> - tells <code>inspect</code> how many times to recurse while formatting the
+object. This is useful for inspecting large complicated objects. Defaults to
+<code>2</code>. To make it recurse indefinitely pass <code>null</code>.</p>
+</li>
+<li><p><code>colors</code> - if <code>true</code>, then the output will be styled with ANSI color codes.
+Defaults to <code>false</code>. Colors are customizable, see below.</p>
+</li>
+<li><p><code>customInspect</code> - if <code>false</code>, then custom <code>inspect()</code> functions defined on the
+objects being inspected won&#39;t be called. Defaults to <code>true</code>.</p>
+</li>
+</ul>
+<p>Example of inspecting all properties of the <code>util</code> object:</p>
+<pre><code>var util = require(&#39;util&#39;);
+
+console.log(util.inspect(util, { showHidden: true, depth: null }));
+</code></pre><h3 id="customizing-util-inspect-colors">Customizing <code>util.inspect</code> colors</h3>
+<p>Color output (if enabled) of <code>util.inspect</code> is customizable globally
+via <code>util.inspect.styles</code> and <code>util.inspect.colors</code> objects.</p>
+<p><code>util.inspect.styles</code> is a map assigning each style a color
+from <code>util.inspect.colors</code>.
+Highlighted styles and their default values are:</p>
+<ul>
+<li><code>number</code> (yellow)</li>
+<li><code>boolean</code> (yellow)</li>
+<li><code>string</code> (green)</li>
+<li><code>date</code> (magenta)</li>
+<li><code>regexp</code> (red)</li>
+<li><code>null</code> (bold)</li>
+<li><code>undefined</code> (grey)</li>
+<li><code>special</code> - only function at this time (cyan)</li>
+<li><code>name</code> (intentionally no styling)</li>
+</ul>
+<p>Predefined color codes are: <code>white</code>, <code>grey</code>, <code>black</code>, <code>blue</code>, <code>cyan</code>, 
+<code>green</code>, <code>magenta</code>, <code>red</code> and <code>yellow</code>.
+There are also <code>bold</code>, <code>italic</code>, <code>underline</code> and <code>inverse</code> codes.</p>
+<p>Objects also may define their own <code>inspect(depth)</code> function which <code>util.inspect()</code>
+will invoke and use the result of when inspecting the object:</p>
+<pre><code>var util = require(&#39;util&#39;);
+
+var obj = { name: &#39;nate&#39; };
+obj.inspect = function(depth) {
+  return &#39;{&#39; + this.name + &#39;}&#39;;
+};
+
+util.inspect(obj);
+  // &quot;{nate}&quot;
+</code></pre><h2 id="util-isarray-object-">util.isArray(object)</h2>
+<p>Returns <code>true</code> if the given &quot;object&quot; is an <code>Array</code>. <code>false</code> otherwise.</p>
+<pre><code>var util = require(&#39;util&#39;);
+
+util.isArray([])
+  // true
+util.isArray(new Array)
+  // true
+util.isArray({})
+  // false
+</code></pre><h2 id="util-isregexp-object-">util.isRegExp(object)</h2>
+<p>Returns <code>true</code> if the given &quot;object&quot; is a <code>RegExp</code>. <code>false</code> otherwise.</p>
+<pre><code>var util = require(&#39;util&#39;);
+
+util.isRegExp(/some regexp/)
+  // true
+util.isRegExp(new RegExp(&#39;another regexp&#39;))
+  // true
+util.isRegExp({})
+  // false
+</code></pre><h2 id="util-isdate-object-">util.isDate(object)</h2>
+<p>Returns <code>true</code> if the given &quot;object&quot; is a <code>Date</code>. <code>false</code> otherwise.</p>
+<pre><code>var util = require(&#39;util&#39;);
+
+util.isDate(new Date())
+  // true
+util.isDate(Date())
+  // false (without &#39;new&#39; returns a String)
+util.isDate({})
+  // false
+</code></pre><h2 id="util-iserror-object-">util.isError(object)</h2>
+<p>Returns <code>true</code> if the given &quot;object&quot; is an <code>Error</code>. <code>false</code> otherwise.</p>
+<pre><code>var util = require(&#39;util&#39;);
+
+util.isError(new Error())
+  // true
+util.isError(new TypeError())
+  // true
+util.isError({ name: &#39;Error&#39;, message: &#39;an error occurred&#39; })
+  // false
+</code></pre><h2 id="util-pump-readablestream-writablestream-callback-">util.pump(readableStream, writableStream, [callback])</h2>
+<pre><code>Stability: 0 - Deprecated: Use readableStream.pipe(writableStream)
+</code></pre><p>Read the data from <code>readableStream</code> and send it to the <code>writableStream</code>.
+When <code>writableStream.write(data)</code> returns <code>false</code> <code>readableStream</code> will be
+paused until the <code>drain</code> event occurs on the <code>writableStream</code>. <code>callback</code> gets
+an error as its only argument and is called when <code>writableStream</code> is closed or
+when an error occurs.</p>
+<h2 id="util-inherits-constructor-superconstructor-">util.inherits(constructor, superConstructor)</h2>
+<p>Inherit the prototype methods from one
+<a href="https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Object/constructor">constructor</a>
+into another.  The prototype of <code>constructor</code> will be set to a new
+object created from <code>superConstructor</code>.</p>
+<p>As an additional convenience, <code>superConstructor</code> will be accessible
+through the <code>constructor.super_</code> property.</p>
+<pre><code>var util = require(&quot;util&quot;);
+var events = require(&quot;events&quot;);
+
+function MyStream() {
+    events.EventEmitter.call(this);
+}
+
+util.inherits(MyStream, events.EventEmitter);
+
+MyStream.prototype.write = function(data) {
+    this.emit(&quot;data&quot;, data);
+}
+
+var stream = new MyStream();
+
+console.log(stream instanceof events.EventEmitter); // true
+console.log(MyStream.super_ === events.EventEmitter); // true
+
+stream.on(&quot;data&quot;, function(data) {
+    console.log(&#39;Received data: &quot;&#39; + data + &#39;&quot;&#39;);
+})
+stream.write(&quot;It works!&quot;); // Received data: &quot;It works!&quot;
+</code></pre></div>
+<script src="assets/js/sh.js" type="text/javascript"></script>
+</body>
+</html>

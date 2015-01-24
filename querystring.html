@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Query Strings</title>
+  <link rel="stylesheet" href="assets/css/bootstrap.min.css"/>
+  <link rel="stylesheet" href="assets/css/custom.css"/>
+  <link rel="stylesheet" href="assets/css/style.css"/>
+  <link rel="stylesheet" href="assets/css/sh_style.css"/>
+</head>
+<body>
+  <div class="container">
+<h1 id="query-string">Query String</h1>
+<pre><code>Stability: 3 - Stable
+</code></pre><!--name=querystring-->
+
+<p>This module provides utilities for dealing with query strings.
+It provides the following methods:</p>
+<h2 id="querystring-stringify-obj-sep-eq-">querystring.stringify(obj, [sep], [eq])</h2>
+<p>Serialize an object to a query string.
+Optionally override the default separator (<code>&#39;&amp;&#39;</code>) and assignment (<code>&#39;=&#39;</code>)
+characters.</p>
+<p>Example:</p>
+<pre><code>querystring.stringify({ foo: &#39;bar&#39;, baz: [&#39;qux&#39;, &#39;quux&#39;], corge: &#39;&#39; })
+// returns
+&#39;foo=bar&amp;baz=qux&amp;baz=quux&amp;corge=&#39;
+
+querystring.stringify({foo: &#39;bar&#39;, baz: &#39;qux&#39;}, &#39;;&#39;, &#39;:&#39;)
+// returns
+&#39;foo:bar;baz:qux&#39;
+</code></pre><h2 id="querystring-parse-str-sep-eq-options-">querystring.parse(str, [sep], [eq], [options])</h2>
+<p>Deserialize a query string to an object.
+Optionally override the default separator (<code>&#39;&amp;&#39;</code>) and assignment (<code>&#39;=&#39;</code>)
+characters.</p>
+<p>Options object may contain <code>maxKeys</code> property (equal to 1000 by default), it&#39;ll
+be used to limit processed keys. Set it to 0 to remove key count limitation.</p>
+<p>Example:</p>
+<pre><code>querystring.parse(&#39;foo=bar&amp;baz=qux&amp;baz=quux&amp;corge&#39;)
+// returns
+{ foo: &#39;bar&#39;, baz: [&#39;qux&#39;, &#39;quux&#39;], corge: &#39;&#39; }
+</code></pre><h2 id="querystring-escape">querystring.escape</h2>
+<p>The escape function used by <code>querystring.stringify</code>,
+provided so that it could be overridden if necessary.</p>
+<h2 id="querystring-unescape">querystring.unescape</h2>
+<p>The unescape function used by <code>querystring.parse</code>,
+provided so that it could be overridden if necessary.</p>
+</div>
+<script src="assets/js/sh.js" type="text/javascript"></script>
+</body>
+</html>
