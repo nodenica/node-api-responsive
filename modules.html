@@ -13,7 +13,6 @@
 <h1 id="modules">Modules</h1>
 <pre><code>Stability: 5 - Locked
 </code></pre><!--name=module-->
-
 <p>Node has a simple module loading system.  In Node, files and modules are in
 one-to-one correspondence.  As an example, <code>foo.js</code> loads the module
 <code>circle.js</code> in the same directory.</p>
@@ -56,7 +55,6 @@ module.exports = function(width) {
 </code></pre><p>The module system is implemented in the <code>require(&quot;module&quot;)</code> module.</p>
 <h2 id="cycles">Cycles</h2>
 <!--type=misc-->
-
 <p>When there are circular <code>require()</code> calls, a module might not be
 done being executed when it is returned.</p>
 <p>Consider this situation:</p>
@@ -99,7 +97,6 @@ in main, a.done=true, b.done=true
 plan accordingly.</p>
 <h2 id="core-modules">Core Modules</h2>
 <!--type=misc-->
-
 <p>Node has several modules compiled into the binary.  These modules are
 described in greater detail elsewhere in this documentation.</p>
 <p>The core modules are defined in node&#39;s source in the <code>lib/</code> folder.</p>
@@ -108,7 +105,6 @@ passed to <code>require()</code>.  For instance, <code>require(&#39;http&#39;)</
 return the built in HTTP module, even if there is a file by that name.</p>
 <h2 id="file-modules">File Modules</h2>
 <!--type=misc-->
-
 <p>If the exact filename is not found, then node will attempt to load the
 required filename with the added extension of <code>.js</code>, <code>.json</code>, and then <code>.node</code>.</p>
 <p><code>.js</code> files are interpreted as JavaScript text files, and <code>.json</code> files are
@@ -126,7 +122,6 @@ That is, <code>circle.js</code> must be in the same directory as <code>foo.js</c
 <code>code</code> property set to <code>&#39;MODULE_NOT_FOUND&#39;</code>.</p>
 <h2 id="loading-from-node_modules-folders">Loading from <code>node_modules</code> Folders</h2>
 <!--type=misc-->
-
 <p>If the module identifier passed to <code>require()</code> is not a native module,
 and does not begin with <code>&#39;/&#39;</code>, <code>&#39;../&#39;</code>, or <code>&#39;./&#39;</code>, then node starts at the
 parent directory of the current module, and adds <code>/node_modules</code>, and
@@ -146,7 +141,6 @@ this order:</p>
 clash.</p>
 <h2 id="folders-as-modules">Folders as Modules</h2>
 <!--type=misc-->
-
 <p>It is convenient to organize programs and libraries into self-contained
 directories, and then provide a single entry point to that library.
 There are three ways in which a folder may be passed to <code>require()</code> as
@@ -170,7 +164,6 @@ example, then <code>require(&#39;./some-library&#39;)</code> would attempt to lo
 </ul>
 <h2 id="caching">Caching</h2>
 <!--type=misc-->
-
 <p>Modules are cached after the first time they are loaded.  This means
 (among other things) that every call to <code>require(&#39;foo&#39;)</code> will get
 exactly the same object returned, if it would resolve to the same file.</p>
@@ -182,7 +175,6 @@ dependencies to be loaded even when they would cause cycles.</p>
 function, and call that function.</p>
 <h3 id="module-caching-caveats">Module Caching Caveats</h3>
 <!--type=misc-->
-
 <p>Modules are cached based on their resolved filename.  Since modules may
 resolve to a different filename based on the location of the calling
 module (loading from <code>node_modules</code> folders), it is not a <em>guarantee</em>
@@ -191,7 +183,6 @@ would resolve to different files.</p>
 <h2 id="the-module-object">The <code>module</code> Object</h2>
 <!-- type=var -->
 <!-- name=module -->
-
 <ul>
 <li>{Object}</li>
 </ul>
@@ -290,7 +281,6 @@ loading.</p>
 <p>The module objects required by this one.</p>
 <h2 id="all-together-">All Together...</h2>
 <!-- type=misc -->
-
 <p>To get the exact filename that will be loaded when <code>require()</code> is called, use
 the <code>require.resolve()</code> function.</p>
 <p>Putting together all of the above, here is the high-level algorithm
@@ -338,7 +328,6 @@ NODE_MODULES_PATHS(START)
 5. return DIRS
 </code></pre><h2 id="loading-from-the-global-folders">Loading from the global folders</h2>
 <!-- type=misc -->
-
 <p>If the <code>NODE_PATH</code> environment variable is set to a colon-delimited list
 of absolute paths, then node will search those paths for modules if they
 are not found elsewhere.  (Note: On Windows, <code>NODE_PATH</code> is delimited by
@@ -356,7 +345,6 @@ place your dependencies locally in <code>node_modules</code> folders.  They will
 loaded faster, and more reliably.</p>
 <h2 id="accessing-the-main-module">Accessing the main module</h2>
 <!-- type=misc -->
-
 <p>When a file is run directly from Node, <code>require.main</code> is set to its
 <code>module</code>. That means that you can determine whether a file has been run
 directly by testing</p>
@@ -368,7 +356,6 @@ directly by testing</p>
 by checking <code>require.main.filename</code>.</p>
 <h2 id="addenda-package-manager-tips">Addenda: Package Manager Tips</h2>
 <!-- type=misc -->
-
 <p>The semantics of Node&#39;s <code>require()</code> function were designed to be general
 enough to support a number of sane directory structures. Package manager
 programs such as <code>dpkg</code>, <code>rpm</code>, and <code>npm</code> will hopefully find it possible to

@@ -20,7 +20,6 @@ will be notified, rather than losing the context of the error in the
 exit immediately with an error code.</p>
 <h2 id="warning-don-t-ignore-errors-">Warning: Don&#39;t Ignore Errors!</h2>
 <!-- type=misc -->
-
 <p>Domain error handlers are not a substitute for closing down your
 process when an error occurs.</p>
 <p>By the very nature of how <code>throw</code> works in JavaScript, there is almost
@@ -162,7 +161,6 @@ function handleRequest(req, res) {
 </code></pre>
 <h2 id="additions-to-error-objects">Additions to Error objects</h2>
 <!-- type=misc -->
-
 <p>Any time an Error object is routed through a domain, a few extra fields
 are added to it.</p>
 <ul>
@@ -176,7 +174,6 @@ thrown, emitted, or passed to a bound callback function.</li>
 </ul>
 <h2 id="implicit-binding">Implicit Binding</h2>
 <!--type=misc-->
-
 <p>If domains are in use, then all <strong>new</strong> EventEmitter objects (including
 Stream objects, requests, responses, etc.) will be implicitly bound to
 the active domain at the time of their creation.</p>
@@ -196,7 +193,6 @@ Domain, so <code>domain.dispose()</code> will not shut down the EventEmitter.
 Implicit binding only takes care of thrown errors and <code>&#39;error&#39;</code> events.</p>
 <h2 id="explicit-binding">Explicit Binding</h2>
 <!--type=misc-->
-
 <p>Sometimes, the domain in use is not the one that ought to be used for a
 specific event emitter.  Or, the event emitter could have been created
 in the context of one domain, but ought to instead be bound to some

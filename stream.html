@@ -33,7 +33,6 @@ should probably not modify unless you definitely know what you are
 doing.</p>
 <h2 id="api-for-stream-consumers">API for Stream Consumers</h2>
 <!--type=misc-->
-
 <p>Streams can be either <a href="#stream_class_stream_readable">Readable</a>, <a href="#stream_class_stream_writable">Writable</a>, or both (<a href="#stream_class_stream_duplex">Duplex</a>).</p>
 <p>All streams are EventEmitters, but they also have other custom methods
 and properties depending on whether they are Readable, Writable, or
@@ -91,7 +90,6 @@ server.listen(1337);
 </code></pre>
 <h3 id="class-stream-readable">Class: stream.Readable</h3>
 <!--type=class-->
-
 <p>The Readable stream interface is the abstraction for a <em>source</em> of
 data that you are reading from.  In other words, data comes <em>out</em> of a
 Readable stream.</p>
@@ -364,7 +362,6 @@ myReader.on(&#39;readable&#39;, function() {
 </code></pre>
 <h3 id="class-stream-writable">Class: stream.Writable</h3>
 <!--type=class-->
-
 <p>The Writable stream interface is an abstraction for a <em>destination</em>
 that you are writing data <em>to</em>.</p>
 <p>Examples of writable streams include:</p>
@@ -505,7 +502,6 @@ computed from the input.  They implement both the <a href="#stream_class_stream_
 </ul>
 <h2 id="api-for-stream-implementors">API for Stream Implementors</h2>
 <!--type=misc-->
-
 <p>To implement any sort of stream, the pattern is the same:</p>
 <ol>
 <li>Extend the appropriate parent class in your own subclass.  (The
@@ -582,7 +578,6 @@ can potentially cause adverse side effects in programs that consume
 your streaming interfaces.</p>
 <h3 id="class-stream-readable">Class: stream.Readable</h3>
 <!--type=class-->
-
 <p><code>stream.Readable</code> is an abstract class designed to be extended with an
 underlying implementation of the <a href="#stream_readable_read_size_1"><code>_read(size)</code></a> method.</p>
 <p>Please see above under <a href="#stream_api_for_stream_consumers">API for Stream Consumers</a> for how to consume
@@ -590,7 +585,6 @@ streams in your programs.  What follows is an explanation of how to
 implement Readable streams in your programs.</p>
 <h4 id="example-a-counting-stream">Example: A Counting Stream</h4>
 <!--type=example-->
-
 <p>This is a basic example of a Readable stream.  It emits the numerals
 from 1 to 1,000,000 in ascending order, and then ends.</p>
 <pre><code class="lang-javascript">var Readable = require(&#39;stream&#39;).Readable;
@@ -814,7 +808,6 @@ SourceWrapper.prototype._read = function(size) {
 </code></pre>
 <h3 id="class-stream-writable">Class: stream.Writable</h3>
 <!--type=class-->
-
 <p><code>stream.Writable</code> is an abstract class designed to be extended with an
 underlying implementation of the <a href="#stream_writable_write_chunk_encoding_callback_1"><code>_write(chunk, encoding, callback)</code></a> method.</p>
 <p>Please see above under <a href="#stream_api_for_stream_consumers">API for Stream Consumers</a> for how to consume
@@ -867,7 +860,6 @@ programs.  However, you <strong>are</strong> expected to override this method in
 your own extension classes.</p>
 <h3 id="class-stream-duplex">Class: stream.Duplex</h3>
 <!--type=class-->
-
 <p>A &quot;duplex&quot; stream is one that is both Readable and Writable, such as a
 TCP socket connection.</p>
 <p>Note that <code>stream.Duplex</code> is an abstract class designed to be extended
@@ -1060,10 +1052,8 @@ for examples and testing, but there are occasionally use cases where
 it can come in handy as a building block for novel sorts of streams.</p>
 <h2 id="streams-under-the-hood">Streams: Under the Hood</h2>
 <!--type=misc-->
-
 <h3 id="buffering">Buffering</h3>
 <!--type=misc-->
-
 <p>Both Writable and Readable streams will buffer data on an internal
 object called <code>_writableState.buffer</code> or <code>_readableState.buffer</code>,
 respectively.</p>
@@ -1106,7 +1096,6 @@ approach, because it almost certainly indicates that something is
 horribly wrong.</p>
 <h3 id="compatibility-with-older-node-versions">Compatibility with Older Node Versions</h3>
 <!--type=misc-->
-
 <p>In versions of Node prior to v0.10, the Readable stream interface was
 simpler, but also less powerful and less useful.</p>
 <ul>
@@ -1165,7 +1154,6 @@ style streams can be wrapped in a Readable class using the <code>wrap()</code>
 method.</p>
 <h3 id="object-mode">Object Mode</h3>
 <!--type=misc-->
-
 <p>Normally, Streams operate on Strings and Buffers exclusively.</p>
 <p>Streams that are in <strong>object mode</strong> can emit generic JavaScript values
 other than Buffers and Strings.</p>

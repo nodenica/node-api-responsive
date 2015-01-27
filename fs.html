@@ -13,7 +13,6 @@
 <h1 id="file-system">File System</h1>
 <pre><code>Stability: 3 - Stable
 </code></pre><!--name=fs-->
-
 <p>File I/O is provided by simple wrappers around standard POSIX functions.  To
 use this module do <code>require(&#39;fs&#39;)</code>. All the methods have asynchronous and
 synchronous forms.</p>
@@ -384,12 +383,10 @@ should continue to run as long as files are being watched. The default is
 the event.</p>
 <h3 id="caveats">Caveats</h3>
 <!--type=misc-->
-
 <p>The <code>fs.watch</code> API is not 100% consistent across platforms, and is
 unavailable in some situations.</p>
 <h4 id="availability">Availability</h4>
 <!--type=misc-->
-
 <p>This feature depends on the underlying operating system providing a way
 to be notified of filesystem changes.</p>
 <ul>
@@ -406,7 +403,6 @@ reliably or at all.</p>
 less reliable.</p>
 <h4 id="filename-argument">Filename Argument</h4>
 <!--type=misc-->
-
 <p>Providing <code>filename</code> argument in the callback is not supported
 on every platform (currently it&#39;s only supported on Linux and Windows).  Even
 on supported platforms <code>filename</code> is not always guaranteed to be provided.

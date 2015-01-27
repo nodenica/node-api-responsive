@@ -149,7 +149,6 @@ the inflate and deflate algorithms.</p>
 the header.</p>
 <h2 id="convenience-methods">Convenience Methods</h2>
 <!--type=misc-->
-
 <p>All of these take a string or buffer as the first argument, and call the
 supplied callback with <code>callback(error, result)</code>.  The
 compression/decompression engine is created using the default settings
@@ -171,7 +170,6 @@ zlib classes directly.</p>
 <p>Decompress a raw Buffer with Unzip.</p>
 <h2 id="options">Options</h2>
 <!--type=misc-->
-
 <p>Each class takes an options object.  All options are optional.  (The
 convenience methods use the default settings for all options.)</p>
 <p>Note that some options are only relevant when compressing, and are
@@ -189,7 +187,6 @@ ignored by the decompression classes.</p>
 <a href="http://zlib.net/manual.html#Advanced">http://zlib.net/manual.html#Advanced</a> for more information on these.</p>
 <h2 id="memory-usage-tuning">Memory Usage Tuning</h2>
 <!--type=misc-->
-
 <p>From <code>zlib/zconf.h</code>, modified to node&#39;s usage:</p>
 <p>The memory requirements for deflate are (in bytes):</p>
 <pre><code>(1 &lt;&lt; (windowBits+2)) +  (1 &lt;&lt; (memLevel+9))
@@ -215,7 +212,6 @@ single <code>write</code> operation.  So, this is another factor that affects th
 speed, at the cost of memory usage.</p>
 <h2 id="constants">Constants</h2>
 <!--type=misc-->
-
 <p>All of the constants defined in zlib.h are also defined on
 <code>require(&#39;zlib&#39;)</code>.
 In the normal course of operations, you will not need to ever set any of
