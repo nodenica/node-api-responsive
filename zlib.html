@@ -126,9 +126,13 @@ http.createServer(function(request, response) {
 <h2 id="class-zlib-zlib">Class: zlib.Zlib</h2>
 <p>Not exported by the <code>zlib</code> module. It is documented here because it is the base
 class of the compressor/decompressor classes.</p>
-<h3 id="zlib-flush-callback-">zlib.flush(callback)</h3>
+<h3 id="zlib-flush-kind-callback-">zlib.flush([kind], callback)</h3>
+<p><code>kind</code> defaults to <code>zlib.Z_FULL_FLUSH</code>.</p>
 <p>Flush pending data. Don&#39;t call this frivolously, premature flushes negatively
 impact the effectiveness of the compression algorithm.</p>
+<h3 id="zlib-params-level-strategy-callback-">zlib.params(level, strategy, callback)</h3>
+<p>Dynamically update the compression level and compression strategy.
+Only applicable to deflate algorithm.</p>
 <h3 id="zlib-reset-">zlib.reset()</h3>
 <p>Reset the compressor/decompressor to factory defaults. Only applicable to
 the inflate and deflate algorithms.</p>
@@ -149,29 +153,35 @@ the inflate and deflate algorithms.</p>
 the header.</p>
 <h2 id="convenience-methods">Convenience Methods</h2>
 <!--type=misc-->
-<p>All of these take a string or buffer as the first argument, and call the
-supplied callback with <code>callback(error, result)</code>.  The
-compression/decompression engine is created using the default settings
-in all convenience methods.  To supply different options, use the
-zlib classes directly.</p>
-<h2 id="zlib-deflate-buf-callback-">zlib.deflate(buf, callback)</h2>
+<p>All of these take a string or buffer as the first argument, an optional second
+argument to supply options to the zlib classes and will call the supplied
+callback with <code>callback(error, result)</code>.</p>
+<p>Every method has a <code>*Sync</code> counterpart, which accept the same arguments, but
+without a callback.</p>
+<h2 id="zlib-deflate-buf-options-callback-">zlib.deflate(buf[, options], callback)</h2>
+<h2 id="zlib-deflatesync-buf-options-">zlib.deflateSync(buf[, options])</h2>
 <p>Compress a string with Deflate.</p>
-<h2 id="zlib-deflateraw-buf-callback-">zlib.deflateRaw(buf, callback)</h2>
+<h2 id="zlib-deflateraw-buf-options-callback-">zlib.deflateRaw(buf[, options], callback)</h2>
+<h2 id="zlib-deflaterawsync-buf-options-">zlib.deflateRawSync(buf[, options])</h2>
 <p>Compress a string with DeflateRaw.</p>
-<h2 id="zlib-gzip-buf-callback-">zlib.gzip(buf, callback)</h2>
+<h2 id="zlib-gzip-buf-options-callback-">zlib.gzip(buf[, options], callback)</h2>
+<h2 id="zlib-gzipsync-buf-options-">zlib.gzipSync(buf[, options])</h2>
 <p>Compress a string with Gzip.</p>
-<h2 id="zlib-gunzip-buf-callback-">zlib.gunzip(buf, callback)</h2>
+<h2 id="zlib-gunzip-buf-options-callback-">zlib.gunzip(buf[, options], callback)</h2>
+<h2 id="zlib-gunzipsync-buf-options-">zlib.gunzipSync(buf[, options])</h2>
 <p>Decompress a raw Buffer with Gunzip.</p>
-<h2 id="zlib-inflate-buf-callback-">zlib.inflate(buf, callback)</h2>
+<h2 id="zlib-inflate-buf-options-callback-">zlib.inflate(buf[, options], callback)</h2>
+<h2 id="zlib-inflatesync-buf-options-">zlib.inflateSync(buf[, options])</h2>
 <p>Decompress a raw Buffer with Inflate.</p>
-<h2 id="zlib-inflateraw-buf-callback-">zlib.inflateRaw(buf, callback)</h2>
+<h2 id="zlib-inflateraw-buf-options-callback-">zlib.inflateRaw(buf[, options], callback)</h2>
+<h2 id="zlib-inflaterawsync-buf-options-">zlib.inflateRawSync(buf[, options])</h2>
 <p>Decompress a raw Buffer with InflateRaw.</p>
-<h2 id="zlib-unzip-buf-callback-">zlib.unzip(buf, callback)</h2>
+<h2 id="zlib-unzip-buf-options-callback-">zlib.unzip(buf[, options], callback)</h2>
+<h2 id="zlib-unzipsync-buf-options-">zlib.unzipSync(buf[, options])</h2>
 <p>Decompress a raw Buffer with Unzip.</p>
 <h2 id="options">Options</h2>
 <!--type=misc-->
-<p>Each class takes an options object.  All options are optional.  (The
-convenience methods use the default settings for all options.)</p>
+<p>Each class takes an options object.  All options are optional.</p>
 <p>Note that some options are only relevant when compressing, and are
 ignored by the decompression classes.</p>
 <ul>

@@ -365,19 +365,11 @@ single domain.</p>
 <p>If the domain on which <code>exit</code> is called has been disposed, <code>exit</code> will return
 without exiting the domain.</p>
 <h3 id="domain-dispose-">domain.dispose()</h3>
-<p>The dispose method destroys a domain, and makes a best effort attempt to
-clean up any and all IO that is associated with the domain.  Streams are
-aborted, ended, closed, and/or destroyed.  Timers are cleared.
-Explicitly bound callbacks are no longer called.  Any error events that
-are raised as a result of this are ignored.</p>
-<p>The intention of calling <code>dispose</code> is generally to prevent cascading
-errors when a critical part of the Domain context is found to be in an
-error state.</p>
-<p>Once the domain is disposed the <code>dispose</code> event will emit.</p>
-<p>Note that IO might still be performed.  However, to the highest degree
-possible, once a domain is disposed, further errors from the emitters in
-that set will be ignored.  So, even if some remaining actions are still
-in flight, Node.js will not communicate further about them.</p>
+<pre><code>Stability: 0 - Deprecated.  Please recover from failed IO actions
+explicitly via error event handlers set on the domain.
+</code></pre><p>Once <code>dispose</code> has been called, the domain will no longer be used by callbacks
+bound into the domain via <code>run</code>, <code>bind</code>, or <code>intercept</code>, and a <code>dispose</code> event
+is emitted.</p>
 </div>
 <script src="assets/js/sh.js" type="text/javascript"></script>
 </body>

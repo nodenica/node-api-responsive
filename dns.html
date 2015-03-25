@@ -43,30 +43,44 @@ dns.resolve4(&#39;www.google.com&#39;, function (err, addresses) {
   console.log(&#39;addresses: &#39; + JSON.stringify(addresses));
 
   addresses.forEach(function (a) {
-    dns.reverse(a, function (err, domains) {
+    dns.reverse(a, function (err, hostnames) {
       if (err) {
         throw err;
       }
 
-      console.log(&#39;reverse for &#39; + a + &#39;: &#39; + JSON.stringify(domains));
+      console.log(&#39;reverse for &#39; + a + &#39;: &#39; + JSON.stringify(hostnames));
     });
   });
 });
 </code></pre><p>There are subtle consequences in choosing one or another, please consult the
 <a href="#dns_implementation_considerations">Implementation considerations section</a>
 for more information.</p>
-<h2 id="dns-lookup-domain-family-callback-">dns.lookup(domain, [family], callback)</h2>
-<p>Resolves a domain (e.g. <code>&#39;google.com&#39;</code>) into the first found A (IPv4) or
-AAAA (IPv6) record.
-The <code>family</code> can be the integer <code>4</code> or <code>6</code>. Defaults to <code>null</code> that indicates
-both Ip v4 and v6 address family.</p>
+<h2 id="dns-lookup-hostname-options-callback-">dns.lookup(hostname[, options], callback)</h2>
+<p>Resolves a hostname (e.g. <code>&#39;google.com&#39;</code>) into the first found A (IPv4) or
+AAAA (IPv6) record. <code>options</code> can be an object or integer. If <code>options</code> is
+not provided, then IP v4 and v6 addresses are both valid. If <code>options</code> is
+an integer, then it must be <code>4</code> or <code>6</code>.</p>
+<p>Alternatively, <code>options</code> can be an object containing two properties,
+<code>family</code> and <code>hints</code>. Both properties are optional. If <code>family</code> is provided,
+it must be the integer <code>4</code> or <code>6</code>. If <code>family</code> is not provided then IP v4
+and v6 addresses are accepted. The <code>hints</code> field, if present, should be one
+or more of the supported <code>getaddrinfo</code> flags. If <code>hints</code> is not provided,
+then no flags are passed to <code>getaddrinfo</code>. Multiple flags can be passed
+through <code>hints</code> by logically <code>OR</code>ing their values. An example usage of
+<code>options</code> is shown below.</p>
+<pre><code>{
+  family: 4,
+  hints: dns.ADDRCONFIG | dns.V4MAPPED
+}
+</code></pre><p>See <a href="#dns_supported_getaddrinfo_flags">supported <code>getaddrinfo</code> flags</a> below for
+more information on supported flags.</p>
 <p>The callback has arguments <code>(err, address, family)</code>.  The <code>address</code> argument
 is a string representation of a IP v4 or v6 address. The <code>family</code> argument
 is either the integer 4 or 6 and denotes the family of <code>address</code> (not
 necessarily the value initially passed to <code>lookup</code>).</p>
 <p>On error, <code>err</code> is an <code>Error</code> object, where <code>err.code</code> is the error code.
 Keep in mind that <code>err.code</code> will be set to <code>&#39;ENOENT&#39;</code> not only when
-the domain does not exist but also when the lookup fails in other ways
+the hostname does not exist but also when the lookup fails in other ways
 such as no available file descriptors.</p>
 <p><code>dns.lookup</code> doesn&#39;t necessarily have anything to do with the DNS protocol.
 It&#39;s only an operating system facility that can associate name with addresses,
@@ -74,49 +88,88 @@ and vice versa.</p>
 <p>Its implementation can have subtle but important consequences on the behavior
 of any Node.js program. Please take some time to consult the <a href="#dns_implementation_considerations">Implementation
 considerations section</a> before using it.</p>
-<h2 id="dns-resolve-domain-rrtype-callback-">dns.resolve(domain, [rrtype], callback)</h2>
-<p>Resolves a domain (e.g. <code>&#39;google.com&#39;</code>) into an array of the record types
-specified by rrtype. Valid rrtypes are <code>&#39;A&#39;</code> (IPV4 addresses, default),
-<code>&#39;AAAA&#39;</code> (IPV6 addresses), <code>&#39;MX&#39;</code> (mail exchange records), <code>&#39;TXT&#39;</code> (text
-records), <code>&#39;SRV&#39;</code> (SRV records), <code>&#39;PTR&#39;</code> (used for reverse IP lookups),
-<code>&#39;NS&#39;</code> (name server records) and <code>&#39;CNAME&#39;</code> (canonical name records).</p>
+<h1 id="dns-lookupservice-address-port-callback-">dns.lookupService(address, port, callback)</h1>
+<p>Resolves the given address and port into a hostname and service using
+<code>getnameinfo</code>.</p>
+<p>The callback has arguments <code>(err, hostname, service)</code>. The <code>hostname</code> and
+<code>service</code> arguments are strings (e.g. <code>&#39;localhost&#39;</code> and <code>&#39;http&#39;</code> respectively).</p>
+<p>On error, <code>err</code> is an <code>Error</code> object, where <code>err.code</code> is the error code.</p>
+<h2 id="dns-resolve-hostname-rrtype-callback-">dns.resolve(hostname[, rrtype], callback)</h2>
+<p>Resolves a hostname (e.g. <code>&#39;google.com&#39;</code>) into an array of the record types
+specified by rrtype.</p>
+<p>Valid rrtypes are:</p>
+<ul>
+<li><code>&#39;A&#39;</code> (IPV4 addresses, default)</li>
+<li><code>&#39;AAAA&#39;</code> (IPV6 addresses)</li>
+<li><code>&#39;MX&#39;</code> (mail exchange records)</li>
+<li><code>&#39;TXT&#39;</code> (text records)</li>
+<li><code>&#39;SRV&#39;</code> (SRV records)</li>
+<li><code>&#39;PTR&#39;</code> (used for reverse IP lookups)</li>
+<li><code>&#39;NS&#39;</code> (name server records)</li>
+<li><code>&#39;CNAME&#39;</code> (canonical name records)</li>
+<li><code>&#39;SOA&#39;</code> (start of authority record)</li>
+</ul>
 <p>The callback has arguments <code>(err, addresses)</code>.  The type of each item
 in <code>addresses</code> is determined by the record type, and described in the
 documentation for the corresponding lookup methods below.</p>
 <p>On error, <code>err</code> is an <code>Error</code> object, where <code>err.code</code> is
 one of the error codes listed below.</p>
-<h2 id="dns-resolve4-domain-callback-">dns.resolve4(domain, callback)</h2>
+<h2 id="dns-resolve4-hostname-callback-">dns.resolve4(hostname, callback)</h2>
 <p>The same as <code>dns.resolve()</code>, but only for IPv4 queries (<code>A</code> records).
 <code>addresses</code> is an array of IPv4 addresses (e.g.
 <code>[&#39;74.125.79.104&#39;, &#39;74.125.79.105&#39;, &#39;74.125.79.106&#39;]</code>).</p>
-<h2 id="dns-resolve6-domain-callback-">dns.resolve6(domain, callback)</h2>
+<h2 id="dns-resolve6-hostname-callback-">dns.resolve6(hostname, callback)</h2>
 <p>The same as <code>dns.resolve4()</code> except for IPv6 queries (an <code>AAAA</code> query).</p>
-<h2 id="dns-resolvemx-domain-callback-">dns.resolveMx(domain, callback)</h2>
+<h2 id="dns-resolvemx-hostname-callback-">dns.resolveMx(hostname, callback)</h2>
 <p>The same as <code>dns.resolve()</code>, but only for mail exchange queries (<code>MX</code> records).</p>
 <p><code>addresses</code> is an array of MX records, each with a priority and an exchange
 attribute (e.g. <code>[{&#39;priority&#39;: 10, &#39;exchange&#39;: &#39;mx.example.com&#39;},...]</code>).</p>
-<h2 id="dns-resolvetxt-domain-callback-">dns.resolveTxt(domain, callback)</h2>
+<h2 id="dns-resolvetxt-hostname-callback-">dns.resolveTxt(hostname, callback)</h2>
 <p>The same as <code>dns.resolve()</code>, but only for text queries (<code>TXT</code> records).
-<code>addresses</code> is an array of the text records available for <code>domain</code> (e.g.,
-<code>[&#39;v=spf1 ip4:0.0.0.0 ~all&#39;]</code>).</p>
-<h2 id="dns-resolvesrv-domain-callback-">dns.resolveSrv(domain, callback)</h2>
+<code>addresses</code> is an 2-d array of the text records available for <code>hostname</code> (e.g.,
+<code>[ [&#39;v=spf1 ip4:0.0.0.0 &#39;, &#39;~all&#39; ] ]</code>). Each sub-array contains TXT chunks of
+one record. Depending on the use case, the could be either joined together or
+treated separately.</p>
+<h2 id="dns-resolvesrv-hostname-callback-">dns.resolveSrv(hostname, callback)</h2>
 <p>The same as <code>dns.resolve()</code>, but only for service records (<code>SRV</code> records).
-<code>addresses</code> is an array of the SRV records available for <code>domain</code>. Properties
+<code>addresses</code> is an array of the SRV records available for <code>hostname</code>. Properties
 of SRV records are priority, weight, port, and name (e.g.,
-<code>[{&#39;priority&#39;: 10, {&#39;weight&#39;: 5, &#39;port&#39;: 21223, &#39;name&#39;: &#39;service.example.com&#39;}, ...]</code>).</p>
-<h2 id="dns-resolvens-domain-callback-">dns.resolveNs(domain, callback)</h2>
+<code>[{&#39;priority&#39;: 10, &#39;weight&#39;: 5, &#39;port&#39;: 21223, &#39;name&#39;: &#39;service.example.com&#39;}, ...]</code>).</p>
+<h2 id="dns-resolvesoa-hostname-callback-">dns.resolveSoa(hostname, callback)</h2>
+<p>The same as <code>dns.resolve()</code>, but only for start of authority record queries
+(<code>SOA</code> record).</p>
+<p><code>addresses</code> is an object with the following structure:</p>
+<pre><code>{
+  nsname: &#39;ns.example.com&#39;,
+  hostmaster: &#39;root.example.com&#39;,
+  serial: 2013101809,
+  refresh: 10000,
+  retry: 2400,
+  expire: 604800,
+  minttl: 3600
+}
+</code></pre><h2 id="dns-resolvens-hostname-callback-">dns.resolveNs(hostname, callback)</h2>
 <p>The same as <code>dns.resolve()</code>, but only for name server records (<code>NS</code> records).
-<code>addresses</code> is an array of the name server records available for <code>domain</code>
+<code>addresses</code> is an array of the name server records available for <code>hostname</code>
 (e.g., <code>[&#39;ns1.example.com&#39;, &#39;ns2.example.com&#39;]</code>).</p>
-<h2 id="dns-resolvecname-domain-callback-">dns.resolveCname(domain, callback)</h2>
+<h2 id="dns-resolvecname-hostname-callback-">dns.resolveCname(hostname, callback)</h2>
 <p>The same as <code>dns.resolve()</code>, but only for canonical name records (<code>CNAME</code>
 records). <code>addresses</code> is an array of the canonical name records available for
-<code>domain</code> (e.g., <code>[&#39;bar.example.com&#39;]</code>).</p>
+<code>hostname</code> (e.g., <code>[&#39;bar.example.com&#39;]</code>).</p>
 <h2 id="dns-reverse-ip-callback-">dns.reverse(ip, callback)</h2>
-<p>Reverse resolves an ip address to an array of domain names.</p>
-<p>The callback has arguments <code>(err, domains)</code>.</p>
+<p>Reverse resolves an ip address to an array of hostnames.</p>
+<p>The callback has arguments <code>(err, hostnames)</code>.</p>
 <p>On error, <code>err</code> is an <code>Error</code> object, where <code>err.code</code> is
 one of the error codes listed below.</p>
+<h2 id="dns-getservers-">dns.getServers()</h2>
+<p>Returns an array of IP addresses as strings that are currently being used for
+resolution</p>
+<h2 id="dns-setservers-servers-">dns.setServers(servers)</h2>
+<p>Given an array of IP addresses as strings, set them as the servers to use for
+resolving</p>
+<p>If you specify a port with the address it will be stripped, as the underlying
+library doesn&#39;t support that.</p>
+<p>This will throw if you pass invalid input.</p>
 <h2 id="error-codes">Error codes</h2>
 <p>Each DNS query can return one of the following error codes:</p>
 <ul>
@@ -127,7 +180,7 @@ one of the error codes listed below.</p>
 <li><code>dns.NOTIMP</code>: DNS server does not implement requested operation.</li>
 <li><code>dns.REFUSED</code>: DNS server refused query.</li>
 <li><code>dns.BADQUERY</code>: Misformatted DNS query.</li>
-<li><code>dns.BADNAME</code>: Misformatted domain name.</li>
+<li><code>dns.BADNAME</code>: Misformatted hostname.</li>
 <li><code>dns.BADFAMILY</code>: Unsupported address family.</li>
 <li><code>dns.BADRESP</code>: Misformatted DNS reply.</li>
 <li><code>dns.CONNREFUSED</code>: Could not contact DNS servers.</li>
@@ -144,6 +197,16 @@ one of the error codes listed below.</p>
 <li><code>dns.LOADIPHLPAPI</code>: Error loading iphlpapi.dll.</li>
 <li><code>dns.ADDRGETNETWORKPARAMS</code>: Could not find GetNetworkParams function.</li>
 <li><code>dns.CANCELLED</code>: DNS query cancelled.</li>
+</ul>
+<h2 id="supported-getaddrinfo-flags">Supported getaddrinfo flags</h2>
+<p>The following flags can be passed as hints to <code>dns.lookup</code>.</p>
+<ul>
+<li><code>dns.ADDRCONFIG</code>: Returned address types are determined by the types
+of addresses supported by the current system. For example, IPv4 addresses
+are only returned if the current system has at least one IPv4 address
+configured. Loopback addresses are not considered.</li>
+<li><code>dns.V4MAPPED</code>: If the IPv6 family was specified, but no IPv6 addresses
+were found, then return IPv4 mapped IPv6 addresses.</li>
 </ul>
 <h2 id="implementation-considerations">Implementation considerations</h2>
 <p>Although <code>dns.lookup</code> and <code>dns.resolve*/dns.reverse</code> functions have the same

@@ -16,14 +16,12 @@
 <code>require(&#39;punycode&#39;)</code> to access it. (To use it with other Node.js versions,
 use npm to install the <code>punycode</code> module first.)</p>
 <h2 id="punycode-decode-string-">punycode.decode(string)</h2>
-<p>Converts a Punycode string of ASCII code points to a string of Unicode code
-points.</p>
+<p>Converts a Punycode string of ASCII-only symbols to a string of Unicode symbols.</p>
 <pre><code>// decode domain name parts
 punycode.decode(&#39;maana-pta&#39;); // &#39;mañana&#39;
 punycode.decode(&#39;--dqo34k&#39;); // &#39;☃-⌘&#39;
 </code></pre><h2 id="punycode-encode-string-">punycode.encode(string)</h2>
-<p>Converts a string of Unicode code points to a Punycode string of ASCII code
-points.</p>
+<p>Converts a string of Unicode symbols to a Punycode string of ASCII-only symbols.</p>
 <pre><code>// encode domain name parts
 punycode.encode(&#39;mañana&#39;); // &#39;maana-pta&#39;
 punycode.encode(&#39;☃-⌘&#39;); // &#39;--dqo34k&#39;
@@ -43,17 +41,17 @@ punycode.toASCII(&#39;mañana.com&#39;); // &#39;xn--maana-pta.com&#39;
 punycode.toASCII(&#39;☃-⌘.com&#39;); // &#39;xn----dqo34k.com&#39;
 </code></pre><h2 id="punycode-ucs2">punycode.ucs2</h2>
 <h3 id="punycode-ucs2-decode-string-">punycode.ucs2.decode(string)</h3>
-<p>Creates an array containing the decimal code points of each Unicode character
-in the string. While <a href="http://mathiasbynens.be/notes/javascript-encoding">JavaScript uses UCS-2
+<p>Creates an array containing the numeric code point values of each Unicode
+symbol in the string. While <a href="http://mathiasbynens.be/notes/javascript-encoding">JavaScript uses UCS-2
 internally</a>, this function
 will convert a pair of surrogate halves (each of which UCS-2 exposes as
 separate characters) into a single code point, matching UTF-16.</p>
-<pre><code>punycode.ucs2.decode(&#39;abc&#39;); // [97, 98, 99]
+<pre><code>punycode.ucs2.decode(&#39;abc&#39;); // [0x61, 0x62, 0x63]
 // surrogate pair for U+1D306 tetragram for centre:
 punycode.ucs2.decode(&#39;\uD834\uDF06&#39;); // [0x1D306]
 </code></pre><h3 id="punycode-ucs2-encode-codepoints-">punycode.ucs2.encode(codePoints)</h3>
-<p>Creates a string based on an array of decimal code points.</p>
-<pre><code>punycode.ucs2.encode([97, 98, 99]); // &#39;abc&#39;
+<p>Creates a string based on an array of numeric code point values.</p>
+<pre><code>punycode.ucs2.encode([0x61, 0x62, 0x63]); // &#39;abc&#39;
 punycode.ucs2.encode([0x1D306]); // &#39;\uD834\uDF06&#39;
 </code></pre><h2 id="punycode-version">punycode.version</h2>
 <p>A string representing the current Punycode.js version number.</p>

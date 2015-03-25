@@ -17,7 +17,11 @@ separate module.</p>
 <h2 id="class-https-server">Class: https.Server</h2>
 <p>This class is a subclass of <code>tls.Server</code> and emits events same as
 <code>http.Server</code>. See <code>http.Server</code> for more information.</p>
-<h2 id="https-createserver-options-requestlistener-">https.createServer(options, [requestListener])</h2>
+<h3 id="server-settimeout-msecs-callback-">server.setTimeout(msecs, callback)</h3>
+<p>See <a href="http.html#http_server_settimeout_msecs_callback">http.Server#setTimeout()</a>.</p>
+<h3 id="server-timeout">server.timeout</h3>
+<p>See <a href="http.html#http_server_timeout">http.Server#timeout</a>.</p>
+<h2 id="https-createserver-options-requestlistener-">https.createServer(options[, requestListener])</h2>
 <p>Returns a new HTTPS web server object. The <code>options</code> is similar to
 <a href="tls.html#tls_tls_createserver_options_secureconnectionlistener">tls.createServer()</a>.  The <code>requestListener</code> is a function which is
 automatically added to the <code>&#39;request&#39;</code> event.</p>
@@ -47,9 +51,9 @@ https.createServer(options, function (req, res) {
   res.writeHead(200);
   res.end(&quot;hello world\n&quot;);
 }).listen(8000);
-</code></pre><h3 id="server-listen-port-host-backlog-callback-">server.listen(port, [host], [backlog], [callback])</h3>
-<h3 id="server-listen-path-callback-">server.listen(path, [callback])</h3>
-<h3 id="server-listen-handle-callback-">server.listen(handle, [callback])</h3>
+</code></pre><h3 id="server-listen-port-host-backlog-callback-">server.listen(port[, host][, backlog][, callback])</h3>
+<h3 id="server-listen-path-callback-">server.listen(path[, callback])</h3>
+<h3 id="server-listen-handle-callback-">server.listen(handle[, callback])</h3>
 <p>See <a href="http.html#http_server_listen_port_hostname_backlog_callback">http.listen()</a> for details.</p>
 <h3 id="server-close-callback-">server.close([callback])</h3>
 <p>See <a href="http.html#http_server_close_callback">http.close()</a> for details.</p>

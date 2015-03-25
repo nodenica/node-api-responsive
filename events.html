@@ -70,16 +70,23 @@ an emitter that you didn&#39;t create (e.g. sockets or file streams).</p>
 <p>Returns emitter, so calls can be chained.</p>
 <h3 id="emitter-setmaxlisteners-n-">emitter.setMaxListeners(n)</h3>
 <p>By default EventEmitters will print a warning if more than 10 listeners are
-added for a particular event. This is a useful default which helps finding memory leaks.
-Obviously not all Emitters should be limited to 10. This function allows
-that to be increased. Set to zero for unlimited.</p>
+added for a particular event. This is a useful default which helps finding
+memory leaks. Obviously not all Emitters should be limited to 10. This function
+allows that to be increased. Set to zero for unlimited.</p>
+<p>Returns emitter, so calls can be chained.</p>
+<h3 id="eventemitter-defaultmaxlisteners">EventEmitter.defaultMaxListeners</h3>
+<p><code>emitter.setMaxListeners(n)</code> sets the maximum on a per-instance basis.
+This class property lets you set it for <em>all</em> <code>EventEmitter</code> instances,
+current and future, effective immediately. Use with care.</p>
+<p>Note that <code>emitter.setMaxListeners(n)</code> still has precedence over
+<code>EventEmitter.defaultMaxListeners</code>.</p>
 <h3 id="emitter-listeners-event-">emitter.listeners(event)</h3>
 <p>Returns an array of listeners for the specified event.</p>
 <pre><code>server.on(&#39;connection&#39;, function (stream) {
   console.log(&#39;someone connected!&#39;);
 });
 console.log(util.inspect(server.listeners(&#39;connection&#39;))); // [ [Function] ]
-</code></pre><h3 id="emitter-emit-event-arg1-arg2-">emitter.emit(event, [arg1], [arg2], [...])</h3>
+</code></pre><h3 id="emitter-emit-event-arg1-arg2-">emitter.emit(event[, arg1][, arg2][, ...])</h3>
 <p>Execute each of the listeners in order with the supplied arguments.</p>
 <p>Returns <code>true</code> if event had listeners, <code>false</code> otherwise.</p>
 <h3 id="class-method-eventemitter-listenercount-emitter-event-">Class Method: EventEmitter.listenerCount(emitter, event)</h3>

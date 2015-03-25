@@ -61,11 +61,12 @@ querystring-parsed object.</p>
 </li>
 </ul>
 <p>The following methods are provided by the URL module:</p>
-<h2 id="url-parse-urlstr-parsequerystring-slashesdenotehost-">url.parse(urlStr, [parseQueryString], [slashesDenoteHost])</h2>
+<h2 id="url-parse-urlstr-parsequerystring-slashesdenotehost-">url.parse(urlStr[, parseQueryString][, slashesDenoteHost])</h2>
 <p>Take a URL string, and return an object.</p>
-<p>Pass <code>true</code> as the second argument to also parse
-the query string using the <code>querystring</code> module.
-Defaults to <code>false</code>.</p>
+<p>Pass <code>true</code> as the second argument to also parse the query string using the
+<code>querystring</code> module. If <code>true</code> then the <code>query</code> property will always be
+assigned an object, and the <code>search</code> property will always be a (possibly
+empty) string.  Defaults to <code>false</code>.</p>
 <p>Pass <code>true</code> as the third argument to treat <code>//foo/bar</code> as
 <code>{ host: &#39;foo&#39;, pathname: &#39;/bar&#39; }</code> rather than
 <code>{ pathname: &#39;//foo/bar&#39; }</code>. Defaults to <code>false</code>.</p>
@@ -90,13 +91,13 @@ slashes, such as <code>mongodb://localhost:8000/</code></li>
 <li><code>hostname</code> will only be used if <code>host</code> is absent.</li>
 <li><code>port</code> will only be used if <code>host</code> is absent.</li>
 <li><code>host</code> will be used in place of <code>hostname</code> and <code>port</code></li>
-<li><code>pathname</code> is treated the same with or without the leading <code>/</code> (slash)</li>
-<li><code>query</code> (object; see <code>querystring</code>) will only be used if <code>search</code> is absent.</li>
+<li><code>pathname</code> is treated the same with or without the leading <code>/</code> (slash).</li>
 <li><code>search</code> will be used in place of <code>query</code>.<ul>
 <li>It is treated the same with or without the leading <code>?</code> (question mark)</li>
 </ul>
 </li>
-<li><code>hash</code> is treated the same with or without the leading <code>#</code> (pound sign, anchor)</li>
+<li><code>query</code> (object; see <code>querystring</code>) will only be used if <code>search</code> is absent.</li>
+<li><code>hash</code> is treated the same with or without the leading <code>#</code> (pound sign, anchor).</li>
 </ul>
 <h2 id="url-resolve-from-to-">url.resolve(from, to)</h2>
 <p>Take a base URL, and a href URL, and resolve them as a browser would for

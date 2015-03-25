@@ -36,7 +36,7 @@ the following values:</p>
 <ul>
 <li><p><code>input</code> - the readable stream to listen to (Required).</p>
 </li>
-<li><p><code>output</code> - the writable stream to write readline data to (Required).</p>
+<li><p><code>output</code> - the writable stream to write readline data to (Optional).</p>
 </li>
 <li><p><code>completer</code> - an optional function that is used for Tab autocompletion. See
 below for an example of using this.</p>
@@ -83,7 +83,7 @@ a <code>&quot;resize&quot;</code> event on the <code>output</code> if/when the c
 <h2 id="class-interface">Class: Interface</h2>
 <p>The class that represents a readline interface with an input and output
 stream.</p>
-<h3 id="rl-setprompt-prompt-length-">rl.setPrompt(prompt, length)</h3>
+<h3 id="rl-setprompt-prompt-">rl.setPrompt(prompt)</h3>
 <p>Sets the prompt, for example when you run <code>node</code> on the command line, you see
 <code>&gt;</code>, which is node&#39;s prompt.</p>
 <h3 id="rl-prompt-preservecursor-">rl.prompt([preserveCursor])</h3>
@@ -92,26 +92,32 @@ options on a new line, giving the user a new spot to write. Set <code>preserveCu
 to <code>true</code> to prevent the cursor placement being reset to <code>0</code>.</p>
 <p>This will also resume the <code>input</code> stream used with <code>createInterface</code> if it has
 been paused.</p>
+<p>If <code>output</code> is set to <code>null</code> or <code>undefined</code> when calling <code>createInterface</code>, the
+prompt is not written.</p>
 <h3 id="rl-question-query-callback-">rl.question(query, callback)</h3>
 <p>Prepends the prompt with <code>query</code> and invokes <code>callback</code> with the user&#39;s
 response. Displays the query to the user, and then invokes <code>callback</code>
 with the user&#39;s response after it has been typed.</p>
 <p>This will also resume the <code>input</code> stream used with <code>createInterface</code> if
 it has been paused.</p>
+<p>If <code>output</code> is set to <code>null</code> or <code>undefined</code> when calling <code>createInterface</code>,
+nothing is displayed.</p>
 <p>Example usage:</p>
 <pre><code>interface.question(&#39;What is your favorite food?&#39;, function(answer) {
   console.log(&#39;Oh, so your favorite food is &#39; + answer);
 });
 </code></pre><h3 id="rl-pause-">rl.pause()</h3>
 <p>Pauses the readline <code>input</code> stream, allowing it to be resumed later if needed.</p>
+<p>Note that this doesn&#39;t immediately pause the stream of events. Several events may be emitted after calling <code>pause</code>, including <code>line</code>.</p>
 <h3 id="rl-resume-">rl.resume()</h3>
 <p>Resumes the readline <code>input</code> stream.</p>
 <h3 id="rl-close-">rl.close()</h3>
 <p>Closes the <code>Interface</code> instance, relinquishing control on the <code>input</code> and
 <code>output</code> streams. The &quot;close&quot; event will also be emitted.</p>
-<h3 id="rl-write-data-key-">rl.write(data, [key])</h3>
-<p>Writes <code>data</code> to <code>output</code> stream. <code>key</code> is an object literal to represent a key
-sequence; available if the terminal is a TTY.</p>
+<h3 id="rl-write-data-key-">rl.write(data[, key])</h3>
+<p>Writes <code>data</code> to <code>output</code> stream, unless <code>output</code> is set to <code>null</code> or
+<code>undefined</code> when calling <code>createInterface</code>. <code>key</code> is an object literal to
+represent a key sequence; available if the terminal is a TTY.</p>
 <p>This will also resume the <code>input</code> stream if it has been paused.</p>
 <p>Example:</p>
 <pre><code>rl.write(&#39;Delete me!&#39;);

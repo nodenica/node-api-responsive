@@ -24,7 +24,7 @@ s.addMembership(&#39;224.0.0.114&#39;);
 s.bind(1234, function() {
   s.addMembership(&#39;224.0.0.114&#39;);
 });
-</code></pre><h2 id="dgram-createsocket-type-callback-">dgram.createSocket(type, [callback])</h2>
+</code></pre><h2 id="dgram-createsocket-type-callback-">dgram.createSocket(type[, callback])</h2>
 <ul>
 <li><code>type</code> String. Either &#39;udp4&#39; or &#39;udp6&#39;</li>
 <li><code>callback</code> Function. Attached as a listener to <code>message</code> events.
@@ -34,21 +34,41 @@ Optional</li>
 <p>Creates a datagram Socket of the specified types.  Valid types are <code>udp4</code>
 and <code>udp6</code>.</p>
 <p>Takes an optional callback which is added as a listener for <code>message</code> events.</p>
-<p>Call <code>socket.bind</code> if you want to receive datagrams. <code>socket.bind()</code> will bind
-to the &quot;all interfaces&quot; address on a random port (it does the right thing for
-both <code>udp4</code> and <code>udp6</code> sockets). You can then retrieve the address and port
+<p>Call <code>socket.bind()</code> if you want to receive datagrams. <code>socket.bind()</code> will
+bind to the &quot;all interfaces&quot; address on a random port (it does the right thing
+for both <code>udp4</code> and <code>udp6</code> sockets). You can then retrieve the address and port
+with <code>socket.address().address</code> and <code>socket.address().port</code>.</p>
+<h2 id="dgram-createsocket-options-callback-">dgram.createSocket(options[, callback])</h2>
+<ul>
+<li><code>options</code> Object</li>
+<li><code>callback</code> Function. Attached as a listener to <code>message</code> events.</li>
+<li>Returns: Socket object</li>
+</ul>
+<p>The <code>options</code> object should contain a <code>type</code> field of either <code>udp4</code> or <code>udp6</code>
+and an optional boolean <code>reuseAddr</code> field.</p>
+<p>When <code>reuseAddr</code> is true <code>socket.bind()</code> will reuse the address, even if
+another process has already bound a socket on it. <code>reuseAddr</code> defaults to
+<code>false</code>.</p>
+<p>Takes an optional callback which is added as a listener for <code>message</code> events.</p>
+<p>Call <code>socket.bind()</code> if you want to receive datagrams. <code>socket.bind()</code> will
+bind to the &quot;all interfaces&quot; address on a random port (it does the right thing
+for both <code>udp4</code> and <code>udp6</code> sockets). You can then retrieve the address and port
 with <code>socket.address().address</code> and <code>socket.address().port</code>.</p>
 <h2 id="class-dgram-socket">Class: dgram.Socket</h2>
 <p>The dgram Socket class encapsulates the datagram functionality.  It
-should be created via <code>dgram.createSocket(type, [callback])</code>.</p>
+should be created via <code>dgram.createSocket(...)</code></p>
 <h3 id="event-message-">Event: &#39;message&#39;</h3>
 <ul>
 <li><code>msg</code> Buffer object. The message</li>
 <li><code>rinfo</code> Object. Remote address information</li>
 </ul>
-<p>Emitted when a new datagram is available on a socket.  <code>msg</code> is a <code>Buffer</code> and <code>rinfo</code> is
-an object with the sender&#39;s address information and the number of bytes in the datagram.</p>
-<h3 id="event-listening-">Event: &#39;listening&#39;</h3>
+<p>Emitted when a new datagram is available on a socket.  <code>msg</code> is a <code>Buffer</code> and
+<code>rinfo</code> is an object with the sender&#39;s address information:</p>
+<pre><code>socket.on(&#39;message&#39;, function(msg, rinfo) {
+  console.log(&#39;Received %d bytes from %s:%d\n&#39;,
+              msg.length, rinfo.address, rinfo.port);
+});
+</code></pre><h3 id="event-listening-">Event: &#39;listening&#39;</h3>
 <p>Emitted when a socket starts listening for datagrams.  This happens as soon as UDP sockets
 are created.</p>
 <h3 id="event-close-">Event: &#39;close&#39;</h3>
@@ -59,9 +79,9 @@ on this socket.</p>
 <li><code>exception</code> Error object</li>
 </ul>
 <p>Emitted when an error occurs.</p>
-<h3 id="socket-send-buf-offset-length-port-address-callback-">socket.send(buf, offset, length, port, address, [callback])</h3>
+<h3 id="socket-send-buf-offset-length-port-address-callback-">socket.send(buf, offset, length, port, address[, callback])</h3>
 <ul>
-<li><code>buf</code> Buffer object.  Message to be sent</li>
+<li><code>buf</code> Buffer object or string.  Message to be sent</li>
 <li><code>offset</code> Integer. Offset in the buffer where the message starts.</li>
 <li><code>length</code> Integer. Number of bytes in the message.</li>
 <li><code>port</code> Integer. Destination port.</li>
@@ -80,11 +100,15 @@ assigned a random port number and is bound to the &quot;all interfaces&quot; add
 when it&#39;s safe to reuse the <code>buf</code> object.  Note that DNS lookups delay the time
 to send for at least one tick.  The only way to know for sure that the datagram
 has been sent is by using a callback.</p>
+<p>With consideration for multi-byte characters, <code>offset</code> and <code>length</code> will
+be calculated with respect to
+<a href="buffer.html#buffer_class_method_buffer_bytelength_string_encoding">byte length</a>
+and not the character position.</p>
 <p>Example of sending a UDP packet to a random port on <code>localhost</code>;</p>
 <pre><code>var dgram = require(&#39;dgram&#39;);
 var message = new Buffer(&quot;Some bytes&quot;);
 var client = dgram.createSocket(&quot;udp4&quot;);
-client.send(message, 0, message.length, 41234, &quot;localhost&quot;, function(err, bytes) {
+client.send(message, 0, message.length, 41234, &quot;localhost&quot;, function(err) {
   client.close();
 });
 </code></pre><p><strong>A Note about UDP datagram size</strong></p>
@@ -111,7 +135,7 @@ a minimum <code>MTU</code> of <code>1500</code> (like Ethernet).</p>
 a packet might travel, and that generally sending a datagram greater than
 the (receiver) <code>MTU</code> won&#39;t work (the packet gets silently dropped, without
 informing the source that the data did not reach its intended recipient).</p>
-<h3 id="socket-bind-port-address-callback-">socket.bind(port, [address], [callback])</h3>
+<h3 id="socket-bind-port-address-callback-">socket.bind(port[, address][, callback])</h3>
 <ul>
 <li><code>port</code> Integer</li>
 <li><code>address</code> String, Optional</li>
@@ -151,6 +175,30 @@ server.on(&quot;listening&quot;, function () {
 
 server.bind(41234);
 // server listening 0.0.0.0:41234
+</code></pre><h3 id="socket-bind-options-callback-">socket.bind(options[, callback])</h3>
+<ul>
+<li><code>options</code> {Object} - Required. Supports the following properties:<ul>
+<li><code>port</code> {Number} - Required.</li>
+<li><code>address</code> {String} - Optional.</li>
+<li><code>exclusive</code> {Boolean} - Optional.</li>
+</ul>
+</li>
+<li><code>callback</code> {Function} - Optional.</li>
+</ul>
+<p>The <code>port</code> and <code>address</code> properties of <code>options</code>, as well as the optional
+callback function, behave as they do on a call to
+<a href="#dgram_socket_bind_port_address_callback">socket.bind(port, [address], [callback])
+</a>.</p>
+<p>If <code>exclusive</code> is <code>false</code> (default), then cluster workers will use the same
+underlying handle, allowing connection handling duties to be shared. When
+<code>exclusive</code> is <code>true</code>, the handle is not shared, and attempted port sharing
+results in an error. An example which listens on an exclusive port is
+shown below.</p>
+<pre><code>socket.bind({
+  address: &#39;localhost&#39;,
+  port: 8000,
+  exclusive: true
+});
 </code></pre><h3 id="socket-close-">socket.close()</h3>
 <p>Close the underlying socket and stop listening for data on it.</p>
 <h3 id="socket-address-">socket.address()</h3>
@@ -189,7 +237,7 @@ systems is 1.</p>
 </ul>
 <p>Sets or clears the <code>IP_MULTICAST_LOOP</code> socket option.  When this option is set, multicast
 packets will also be received on the local interface.</p>
-<h3 id="socket-addmembership-multicastaddress-multicastinterface-">socket.addMembership(multicastAddress, [multicastInterface])</h3>
+<h3 id="socket-addmembership-multicastaddress-multicastinterface-">socket.addMembership(multicastAddress[, multicastInterface])</h3>
 <ul>
 <li><code>multicastAddress</code> String</li>
 <li><code>multicastInterface</code> String, Optional</li>
@@ -197,7 +245,7 @@ packets will also be received on the local interface.</p>
 <p>Tells the kernel to join a multicast group with <code>IP_ADD_MEMBERSHIP</code> socket option.</p>
 <p>If <code>multicastInterface</code> is not specified, the OS will try to add membership to all valid
 interfaces.</p>
-<h3 id="socket-dropmembership-multicastaddress-multicastinterface-">socket.dropMembership(multicastAddress, [multicastInterface])</h3>
+<h3 id="socket-dropmembership-multicastaddress-multicastinterface-">socket.dropMembership(multicastAddress[, multicastInterface])</h3>
 <ul>
 <li><code>multicastAddress</code> String</li>
 <li><code>multicastInterface</code> String, Optional</li>

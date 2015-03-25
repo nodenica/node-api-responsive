@@ -11,7 +11,7 @@
 <body>
   <div class="container">
 <h1 id="cluster">Cluster</h1>
-<pre><code>Stability: 1 - Experimental
+<pre><code>Stability: 2 - Unstable
 </code></pre><p>A single instance of Node runs in a single thread. To take advantage of
 multi-core systems the user will sometimes want to launch a cluster of Node
 processes to handle the load.</p>
@@ -53,13 +53,24 @@ server in a worker.</p>
 <p>The worker processes are spawned using the <code>child_process.fork</code> method,
 so that they can communicate with the parent via IPC and pass server
 handles back and forth.</p>
-<p>When you call <code>server.listen(...)</code> in a worker, it serializes the
-arguments and passes the request to the master process.  If the master
-process already has a listening server matching the worker&#39;s
-requirements, then it passes the handle to the worker.  If it does not
-already have a listening server matching that requirement, then it will
-create one, and pass the handle to the worker.</p>
-<p>This causes potentially surprising behavior in three edge cases:</p>
+<p>The cluster module supports two methods of distributing incoming
+connections.</p>
+<p>The first one (and the default one on all platforms except Windows),
+is the round-robin approach, where the master process listens on a
+port, accepts new connections and distributes them across the workers
+in a round-robin fashion, with some built-in smarts to avoid
+overloading a worker process.</p>
+<p>The second approach is where the master process creates the listen
+socket and sends it to interested workers. The workers then accept
+incoming connections directly.</p>
+<p>The second approach should, in theory, give the best performance.
+In practice however, distribution tends to be very unbalanced due
+to operating system scheduler vagaries. Loads have been observed
+where over 70% of all connections ended up in just two processes,
+out of a total of eight.</p>
+<p>Because <code>server.listen()</code> hands off most of the work to the master
+process, there are three cases where the behavior between a normal
+node.js process and a cluster worker differs:</p>
 <ol>
 <li><code>server.listen({fd: 7})</code> Because the message is passed to the master,
 file descriptor 7 <strong>in the parent</strong> will be listened on, and the
@@ -76,18 +87,27 @@ port is random the first time, but predictable thereafter.  If you
 want to listen on a unique port, generate a port number based on the
 cluster worker ID.</li>
 </ol>
-<p>When multiple processes are all <code>accept()</code>ing on the same underlying
-resource, the operating system load-balances across them very
-efficiently.  There is no routing logic in Node.js, or in your program,
-and no shared state between the workers.  Therefore, it is important to
-design your program such that it does not rely too heavily on in-memory
-data objects for things like sessions and login.</p>
+<p>There is no routing logic in Node.js, or in your program, and no shared
+state between the workers.  Therefore, it is important to design your
+program such that it does not rely too heavily on in-memory data objects
+for things like sessions and login.</p>
 <p>Because workers are all separate processes, they can be killed or
 re-spawned depending on your program&#39;s needs, without affecting other
 workers.  As long as there are some workers still alive, the server will
 continue to accept connections.  Node does not automatically manage the
 number of workers for you, however.  It is your responsibility to manage
 the worker pool for your application&#39;s needs.</p>
+<h2 id="cluster-schedulingpolicy">cluster.schedulingPolicy</h2>
+<p>The scheduling policy, either <code>cluster.SCHED_RR</code> for round-robin or
+<code>cluster.SCHED_NONE</code> to leave it to the operating system. This is a
+global setting and effectively frozen once you spawn the first worker
+or call <code>cluster.setupMaster()</code>, whatever comes first.</p>
+<p><code>SCHED_RR</code> is the default on all operating systems except Windows.
+Windows will change to <code>SCHED_RR</code> once libuv is able to effectively
+distribute IOCP handles without incurring a large performance hit.</p>
+<p><code>cluster.schedulingPolicy</code> can also be set through the
+<code>NODE_CLUSTER_SCHED_POLICY</code> environment variable. Valid
+values are <code>&quot;rr&quot;</code> and <code>&quot;none&quot;</code>.</p>
 <h2 id="cluster-settings">cluster.settings</h2>
 <ul>
 <li>{Object}<ul>
@@ -98,6 +118,8 @@ the worker pool for your application&#39;s needs.</p>
 (Default=<code>process.argv.slice(2)</code>)</li>
 <li><code>silent</code> {Boolean} whether or not to send output to parent&#39;s stdio.
 (Default=<code>false</code>)</li>
+<li><code>uid</code> {Number} Sets the user identity of the process. (See setuid(2).)</li>
+<li><code>gid</code> {Number} Sets the group identity of the process. (See setgid(2).)</li>
 </ul>
 </li>
 </ul>
@@ -200,7 +222,14 @@ the process to be killed.</li>
 });
 </code></pre><p>See <a href="child_process.html#child_process_event_exit">child_process event: &#39;exit&#39;</a>.</p>
 <h2 id="event-setup-">Event: &#39;setup&#39;</h2>
-<p>Emitted the first time that <code>.setupMaster()</code> is called.</p>
+<ul>
+<li><code>settings</code> {Object}</li>
+</ul>
+<p>Emitted every time <code>.setupMaster()</code> is called.</p>
+<p>The <code>settings</code> object is the <code>cluster.settings</code> object at the time
+<code>.setupMaster()</code> was called and is advisory only, since multiple calls to
+<code>.setupMaster()</code> can be made in a single tick.</p>
+<p>If accuracy is important, use <code>cluster.settings</code>.</p>
 <h2 id="cluster-setupmaster-settings-">cluster.setupMaster([settings])</h2>
 <ul>
 <li><code>settings</code> {Object}<ul>
@@ -216,22 +245,25 @@ the process to be killed.</li>
 the settings will be present in <code>cluster.settings</code>.</p>
 <p>Note that:</p>
 <ul>
-<li>Only the first call to <code>.setupMaster()</code> has any effect, subsequent calls are
-ignored</li>
-<li>That because of the above, the <em>only</em> attribute of a worker that may be
-customized per-worker is the <code>env</code> passed to <code>.fork()</code></li>
-<li><code>.fork()</code> calls <code>.setupMaster()</code> internally to establish the defaults, so to
-have any effect, <code>.setupMaster()</code> must be called <em>before</em> any calls to
-<code>.fork()</code></li>
+<li>any settings changes only affect future calls to <code>.fork()</code> and have no
+effect on workers that are already running</li>
+<li>The <em>only</em> attribute of a worker that cannot be set via <code>.setupMaster()</code> is
+the <code>env</code> passed to <code>.fork()</code></li>
+<li>the defaults above apply to the first call only, the defaults for later
+calls is the current value at the time of <code>cluster.setupMaster()</code> is called</li>
 </ul>
 <p>Example:</p>
-<pre><code>var cluster = require(&quot;cluster&quot;);
+<pre><code>var cluster = require(&#39;cluster&#39;);
 cluster.setupMaster({
-  exec : &quot;worker.js&quot;,
-  args : [&quot;--use&quot;, &quot;https&quot;],
-  silent : true
+  exec: &#39;worker.js&#39;,
+  args: [&#39;--use&#39;, &#39;https&#39;],
+  silent: true
 });
-cluster.fork();
+cluster.fork(); // https worker
+cluster.setupMaster({
+  args: [&#39;--use&#39;, &#39;http&#39;]
+});
+cluster.fork(); // http worker
 </code></pre><p>This can only be called from the master process.</p>
 <h2 id="cluster-fork-env-">cluster.fork([env])</h2>
 <ul>
@@ -271,8 +303,10 @@ if (cluster.isMaster) {
 <p>A hash that stores the active worker objects, keyed by <code>id</code> field. Makes it
 easy to loop through all the workers. It is only available in the master
 process.</p>
-<p>A worker is removed from cluster.workers just before the <code>&#39;disconnect&#39;</code> or
-<code>&#39;exit&#39;</code> event is emitted.</p>
+<p>A worker is removed from cluster.workers after the worker has disconnected <em>and</em>
+exited. The order between these two events cannot be determined in advance.
+However, it is guaranteed that the removal from the cluster.workers list happens
+before last <code>&#39;disconnect&#39;</code> or <code>&#39;exit&#39;</code> event is emitted.</p>
 <pre><code>// Go through all workers
 function eachWorker(callback) {
   for (var id in cluster.workers) {
@@ -325,7 +359,7 @@ exit, the master may choose not to respawn a worker based on this value.</p>
 
 // kill worker
 worker.kill();
-</code></pre><h3 id="worker-send-message-sendhandle-">worker.send(message, [sendHandle])</h3>
+</code></pre><h3 id="worker-send-message-sendhandle-">worker.send(message[, sendHandle])</h3>
 <ul>
 <li><code>message</code> {Object}</li>
 <li><code>sendHandle</code> {Handle object}</li>
@@ -406,7 +440,14 @@ the <code>disconnect</code> event has not been emitted after some time.</p>
     }
   });
 }
-</code></pre><h3 id="event-message-">Event: &#39;message&#39;</h3>
+</code></pre><h3 id="worker-isdead-">worker.isDead()</h3>
+<p>This function returns <code>true</code> if the worker&#39;s process has terminated (either
+because of exiting or being signaled). Otherwise, it returns <code>false</code>.</p>
+<h3 id="worker-isconnected-">worker.isConnected()</h3>
+<p>This function returns <code>true</code> if the worker is connected to its master via its IPC
+channel, <code>false</code> otherwise. A worker is connected to its master after it&#39;s been
+created. It is disconnected after the <code>disconnect</code> event is emitted.</p>
+<h3 id="event-message-">Event: &#39;message&#39;</h3>
 <ul>
 <li><code>message</code> {Object}</li>
 </ul>

@@ -14,6 +14,50 @@
 <!-- type=global -->
 <p>The <code>process</code> object is a global object and can be accessed from anywhere.
 It is an instance of <a href="events.html#events_class_events_eventemitter">EventEmitter</a>.</p>
+<h2 id="exit-codes">Exit Codes</h2>
+<p>Node will normally exit with a <code>0</code> status code when no more async
+operations are pending.  The following status codes are used in other
+cases:</p>
+<ul>
+<li><code>1</code> <strong>Uncaught Fatal Exception</strong> - There was an uncaught exception,
+and it was not handled by a domain or an <code>uncaughtException</code> event
+handler.</li>
+<li><code>2</code> - Unused (reserved by Bash for builtin misuse)</li>
+<li><code>3</code> <strong>Internal JavaScript Parse Error</strong> - The JavaScript source code
+internal in Node&#39;s bootstrapping process caused a parse error.  This
+is extremely rare, and generally can only happen during development
+of Node itself.</li>
+<li><code>4</code> <strong>Internal JavaScript Evaluation Failure</strong> - The JavaScript
+source code internal in Node&#39;s bootstrapping process failed to
+return a function value when evaluated.  This is extremely rare, and
+generally can only happen during development of Node itself.</li>
+<li><code>5</code> <strong>Fatal Error</strong> - There was a fatal unrecoverable error in V8.
+Typically a message will be printed to stderr with the prefix <code>FATAL
+ERROR</code>.</li>
+<li><code>6</code> <strong>Non-function Internal Exception Handler</strong> - There was an
+uncaught exception, but the internal fatal exception handler
+function was somehow set to a non-function, and could not be called.</li>
+<li><code>7</code> <strong>Internal Exception Handler Run-Time Failure</strong> - There was an
+uncaught exception, and the internal fatal exception handler
+function itself threw an error while attempting to handle it.  This
+can happen, for example, if a <code>process.on(&#39;uncaughtException&#39;)</code> or
+<code>domain.on(&#39;error&#39;)</code> handler throws an error.</li>
+<li><code>8</code> - Unused.  In previous versions of Node, exit code 8 sometimes
+indicated an uncaught exception.</li>
+<li><code>9</code> - <strong>Invalid Argument</strong> - Either an unknown option was specified,
+or an option requiring a value was provided without a value.</li>
+<li><code>10</code> <strong>Internal JavaScript Run-Time Failure</strong> - The JavaScript
+source code internal in Node&#39;s bootstrapping process threw an error
+when the bootstrapping function was called.  This is extremely rare,
+and generally can only happen during development of Node itself.</li>
+<li><code>12</code> <strong>Invalid Debug Argument</strong> - The <code>--debug</code> and/or <code>--debug-brk</code>
+options were set, but an invalid port number was chosen.</li>
+<li><code>&gt;128</code> <strong>Signal Exits</strong> - If Node receives a fatal signal such as
+<code>SIGKILL</code> or <code>SIGHUP</code>, then its exit code will be <code>128</code> plus the
+value of the signal code.  This is a standard Unix practice, since
+exit codes are defined to be 7-bit integers, and signal exits set
+the high-order bit, and then contain the value of the signal code.</li>
+</ul>
 <h2 id="event-exit-">Event: &#39;exit&#39;</h2>
 <p>Emitted when the process is about to exit. There is no way to prevent the
 exiting of the event loop at this point, and once all <code>exit</code> listeners have
@@ -29,7 +73,14 @@ argument, the code the process is exiting with.</p>
   }, 0);
   console.log(&#39;About to exit with code:&#39;, code);
 });
-</code></pre><h2 id="event-uncaughtexception-">Event: &#39;uncaughtException&#39;</h2>
+</code></pre><h2 id="event-beforeexit-">Event: &#39;beforeExit&#39;</h2>
+<p>This event is emitted when node empties it&#39;s event loop and has nothing else to
+schedule. Normally, node exits when there is no work scheduled, but a listener
+for &#39;beforeExit&#39; can make asynchronous calls, and cause node to continue.</p>
+<p>&#39;beforeExit&#39; is not emitted for conditions causing explicit termination, such as
+<code>process.exit()</code> or uncaught exceptions, and should not be used as an
+alternative to the &#39;exit&#39; event unless the intention is to schedule more work.</p>
+<h2 id="event-uncaughtexception-">Event: &#39;uncaughtException&#39;</h2>
 <p>Emitted when an exception bubbles all the way back to the event loop. If a
 listener is added for this exception, the default action (which is to print
 a stack trace and exit) will not occur.</p>
@@ -46,7 +97,7 @@ setTimeout(function() {
 nonexistentFunc();
 console.log(&#39;This will not run.&#39;);
 </code></pre><p>Note that <code>uncaughtException</code> is a very crude mechanism for exception
-handling and may be removed in the future.</p>
+handling.</p>
 <p>Don&#39;t use it, use <a href="domain.html">domains</a> instead. If you do use it, restart
 your application after every unhandled exception!</p>
 <p>Do <em>not</em> use it as the node.js equivalent of <code>On Error Resume Next</code>. An
@@ -111,7 +162,8 @@ target process.</li>
   process.stdout.write(d + &#39;\n&#39;);
 };
 </code></pre><p><code>process.stderr</code> and <code>process.stdout</code> are unlike other streams in Node in
-that writes to them are usually blocking.</p>
+that they cannot be closed (<code>end()</code> will throw), they never emit the <code>finish</code>
+event and that writes are usually blocking.</p>
 <ul>
 <li>They are blocking in the case that they refer to regular files or TTY file
 descriptors.</li>
@@ -136,7 +188,8 @@ false
 <h2 id="process-stderr">process.stderr</h2>
 <p>A writable stream to stderr (on fd <code>2</code>).</p>
 <p><code>process.stderr</code> and <code>process.stdout</code> are unlike other streams in Node in
-that writes to them are usually blocking.</p>
+that they cannot be closed (<code>end()</code> will throw), they never emit the <code>finish</code>
+event and that writes are usually blocking.</p>
 <ul>
 <li>They are blocking in the case that they refer to regular files or TTY file
 descriptors.</li>
@@ -243,15 +296,23 @@ console.log(process.env.foo);
 <p>To exit with a &#39;failure&#39; code:</p>
 <pre><code>process.exit(1);
 </code></pre><p>The shell that executed node should see the exit code as 1.</p>
+<h2 id="process-exitcode">process.exitCode</h2>
+<p>A number which will be the process exit code, when the process either
+exits gracefully, or is exited via <code>process.exit()</code> without specifying
+a code.</p>
+<p>Specifying a code to <code>process.exit(code)</code> will override any previous
+setting of <code>process.exitCode</code>.</p>
 <h2 id="process-getgid-">process.getgid()</h2>
-<p>Note: this function is only available on POSIX platforms (i.e. not Windows)</p>
+<p>Note: this function is only available on POSIX platforms (i.e. not Windows,
+Android)</p>
 <p>Gets the group identity of the process. (See getgid(2).)
 This is the numerical group id, not the group name.</p>
 <pre><code>if (process.getgid) {
   console.log(&#39;Current gid: &#39; + process.getgid());
 }
 </code></pre><h2 id="process-setgid-id-">process.setgid(id)</h2>
-<p>Note: this function is only available on POSIX platforms (i.e. not Windows)</p>
+<p>Note: this function is only available on POSIX platforms (i.e. not Windows,
+Android)</p>
 <p>Sets the group identity of the process. (See setgid(2).)  This accepts either
 a numerical ID or a groupname string. If a groupname is specified, this method
 blocks while resolving it to a numerical ID.</p>
@@ -266,14 +327,16 @@ blocks while resolving it to a numerical ID.</p>
   }
 }
 </code></pre><h2 id="process-getuid-">process.getuid()</h2>
-<p>Note: this function is only available on POSIX platforms (i.e. not Windows)</p>
+<p>Note: this function is only available on POSIX platforms (i.e. not Windows,
+Android)</p>
 <p>Gets the user identity of the process. (See getuid(2).)
 This is the numerical userid, not the username.</p>
 <pre><code>if (process.getuid) {
   console.log(&#39;Current uid: &#39; + process.getuid());
 }
 </code></pre><h2 id="process-setuid-id-">process.setuid(id)</h2>
-<p>Note: this function is only available on POSIX platforms (i.e. not Windows)</p>
+<p>Note: this function is only available on POSIX platforms (i.e. not Windows,
+Android)</p>
 <p>Sets the user identity of the process. (See setuid(2).)  This accepts either
 a numerical ID or a username string.  If a username is specified, this method
 blocks while resolving it to a numerical ID.</p>
@@ -288,16 +351,19 @@ blocks while resolving it to a numerical ID.</p>
   }
 }
 </code></pre><h2 id="process-getgroups-">process.getgroups()</h2>
-<p>Note: this function is only available on POSIX platforms (i.e. not Windows)</p>
+<p>Note: this function is only available on POSIX platforms (i.e. not Windows,
+Android)</p>
 <p>Returns an array with the supplementary group IDs. POSIX leaves it unspecified
 if the effective group ID is included but node.js ensures it always is.</p>
 <h2 id="process-setgroups-groups-">process.setgroups(groups)</h2>
-<p>Note: this function is only available on POSIX platforms (i.e. not Windows)</p>
+<p>Note: this function is only available on POSIX platforms (i.e. not Windows,
+Android)</p>
 <p>Sets the supplementary group IDs. This is a privileged operation, meaning you
 need to be root or have the CAP_SETGID capability.</p>
 <p>The list can contain group IDs, group names or both.</p>
 <h2 id="process-initgroups-user-extra_group-">process.initgroups(user, extra_group)</h2>
-<p>Note: this function is only available on POSIX platforms (i.e. not Windows)</p>
+<p>Note: this function is only available on POSIX platforms (i.e. not Windows,
+Android)</p>
 <p>Reads /etc/group and initializes the group access list, using all groups of
 which the user is a member. This is a privileged operation, meaning you need
 to be root or have the CAP_SETGID capability.</p>
@@ -349,7 +415,7 @@ the &quot;config.gypi&quot; file that was produced when running the <code>./conf
      strict_aliasing: &#39;true&#39;,
      target_arch: &#39;x64&#39;,
      v8_use_snapshot: &#39;true&#39; } }
-</code></pre><h2 id="process-kill-pid-signal-">process.kill(pid, [signal])</h2>
+</code></pre><h2 id="process-kill-pid-signal-">process.kill(pid[, signal])</h2>
 <p>Send a signal to a process. <code>pid</code> is the process id and <code>signal</code> is the
 string describing the signal to send.  Signal names are strings like
 &#39;SIGINT&#39; or &#39;SIGHUP&#39;.  If omitted, the signal will be &#39;SIGTERM&#39;.
@@ -403,13 +469,23 @@ console.log(util.inspect(process.memoryUsage()));
   heapUsed: 650472 }
 </code></pre><p><code>heapTotal</code> and <code>heapUsed</code> refer to V8&#39;s memory usage.</p>
 <h2 id="process-nexttick-callback-">process.nextTick(callback)</h2>
-<p>On the next loop around the event loop call this callback.
-This is <em>not</em> a simple alias to <code>setTimeout(fn, 0)</code>, it&#39;s much more
-efficient.  It typically runs before any other I/O events fire, but there
-are some exceptions.  See <code>process.maxTickDepth</code> below.</p>
-<pre><code>process.nextTick(function() {
+<ul>
+<li><code>callback</code> {Function}</li>
+</ul>
+<p>Once the current event loop turn runs to completion, call the callback
+function.</p>
+<p>This is <em>not</em> a simple alias to <code>setTimeout(fn, 0)</code>, it&#39;s much more
+efficient.  It runs before any additional I/O events (including
+timers) fire in subsequent ticks of the event loop.</p>
+<pre><code>console.log(&#39;start&#39;);
+process.nextTick(function() {
   console.log(&#39;nextTick callback&#39;);
 });
+console.log(&#39;scheduled&#39;);
+// Output:
+// start
+// scheduled
+// nextTick callback
 </code></pre><p>This is important in developing APIs where you want to give the user the
 chance to assign event handlers after an object has been constructed,
 but before any I/O has occurred.</p>
@@ -451,29 +527,15 @@ bar();
 
   fs.stat(&#39;file&#39;, cb);
 }
-</code></pre><h2 id="process-maxtickdepth">process.maxTickDepth</h2>
-<ul>
-<li>{Number} Default = 1000</li>
-</ul>
-<p>Callbacks passed to <code>process.nextTick</code> will <em>usually</em> be called at the
-end of the current flow of execution, and are thus approximately as fast
-as calling a function synchronously.  Left unchecked, this would starve
-the event loop, preventing any I/O from occurring.</p>
-<p>Consider this code:</p>
-<pre><code>process.nextTick(function foo() {
-  process.nextTick(foo);
-});
-</code></pre><p>In order to avoid the situation where Node is blocked by an infinite
-loop of recursive series of nextTick calls, it defers to allow some I/O
-to be done every so often.</p>
-<p>The <code>process.maxTickDepth</code> value is the maximum depth of
-nextTick-calling nextTick-callbacks that will be evaluated before
-allowing other forms of I/O to occur.</p>
+</code></pre><p>Note: the nextTick queue is completely drained on each pass of the
+event loop <strong>before</strong> additional I/O is processed.  As a result,
+recursively setting nextTick callbacks will block any I/O from
+happening, just like a <code>while(true);</code> loop.</p>
 <h2 id="process-umask-mask-">process.umask([mask])</h2>
 <p>Sets or reads the process&#39;s file mode creation mask. Child processes inherit
 the mask from the parent process. Returns the old mask if <code>mask</code> argument is
 given, otherwise returns the current mask.</p>
-<pre><code>var oldmask, newmask = 0644;
+<pre><code>var oldmask, newmask = 0022;
 
 oldmask = process.umask(newmask);
 console.log(&#39;Changed umask from: &#39; + oldmask.toString(8) +
@@ -497,7 +559,15 @@ setTimeout(function() {
   console.log(&#39;benchmark took %d nanoseconds&#39;, diff[0] * 1e9 + diff[1]);
   // benchmark took 1000000527 nanoseconds
 }, 1000);
-</code></pre></div>
+</code></pre><h2 id="process-mainmodule">process.mainModule</h2>
+<p>Alternate way to retrieve
+<a href="modules.html#modules_accessing_the_main_module"><code>require.main</code></a>.
+The difference is that if the main module changes at runtime, <code>require.main</code>
+might still refer to the original main module in modules that were required
+before the change occurred. Generally it&#39;s safe to assume that the two refer
+to the same module.</p>
+<p>As with <code>require.main</code>, it will be <code>undefined</code> if there was no entry script.</p>
+</div>
 <script src="assets/js/sh.js" type="text/javascript"></script>
 </body>
 </html>

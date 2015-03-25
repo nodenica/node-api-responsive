@@ -11,7 +11,8 @@
 <body>
   <div class="container">
 <h1 id="repl">REPL</h1>
-<p>A Read-Eval-Print-Loop (REPL) is available both as a standalone program and
+<pre><code>Stability: 3 - Stable
+</code></pre><p>A Read-Eval-Print-Loop (REPL) is available both as a standalone program and
 easily includable in other programs. The REPL provides a way to interactively
 run JavaScript and see the results.  It can be used for debugging, testing, or
 just trying things out.</p>
@@ -33,8 +34,9 @@ terminal settings which will allow you to use with <code>rlwrap</code>.</p>
 <p>For example, you could add this to your bashrc file:</p>
 <pre><code>alias node=&quot;env NODE_NO_READLINE=1 rlwrap node&quot;
 </code></pre><h2 id="repl-start-options-">repl.start(options)</h2>
-<p>Returns and starts a <code>REPLServer</code> instance. Accepts an &quot;options&quot; Object that
-takes the following values:</p>
+<p>Returns and starts a <code>REPLServer</code> instance, that inherits from 
+[Readline Interface][]. Accepts an &quot;options&quot; Object that takes 
+the following values:</p>
 <ul>
 <li><p><code>prompt</code> - the prompt and <code>stream</code> for all I/O. Defaults to <code>&gt;</code>.</p>
 </li>
@@ -123,6 +125,21 @@ to signal &quot;end&quot; on the <code>input</code> stream.</p>
 <pre><code>r.on(&#39;exit&#39;, function () {
   console.log(&#39;Got &quot;exit&quot; event from repl!&#39;);
   process.exit();
+});
+</code></pre><h3 id="event-reset-">Event: &#39;reset&#39;</h3>
+<p><code>function (context) {}</code></p>
+<p>Emitted when the REPL&#39;s context is reset. This happens when you type <code>.clear</code>.
+If you start the repl with <code>{ useGlobal: true }</code> then this event will never
+be emitted.</p>
+<p>Example of listening for <code>reset</code>:</p>
+<pre><code>// Extend the initial repl context.
+r = repl.start({ options ... });
+someExtension.extend(r.context);
+
+// When a new context is created extend it as well.
+r.on(&#39;reset&#39;, function (context) {
+  console.log(&#39;repl has a new context&#39;);
+  someExtension.extend(context);
 });
 </code></pre><h2 id="repl-features">REPL Features</h2>
 <!-- type=misc -->
